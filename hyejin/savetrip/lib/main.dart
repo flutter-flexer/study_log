@@ -26,35 +26,41 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: Text(title),
         ),
-        body: CustomForm(),
+        body: CustomCheckList()
+
       ),
     );
   }
 }
 
-//
-//body: <Widget> [
-//CustomForm(),
-//ListView(
-//children: <Widget>[
-//ListTile(
-//title: Text('Map'),
-//),
-//],
-//),
-//],
-class CustomForm extends StatefulWidget {
+
+
+class CustomCheckList extends StatefulWidget {
   @override
-  CustomFormState createState() {
-    return CustomFormState();
+  CustomCheckListState createState() {
+    return CustomCheckListState();
   }
+
 }
 
-class CustomFormState extends State<CustomForm> {
+class CustomCheckListState extends State<CustomCheckList> {
   final _formKey = GlobalKey<FormState>();
+  final textController = TextEditingController();
+  final memos = <String>[];
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        customForm(),
+        Expanded(
+          child: buildList(),
+        ),
+      ],
+    );
+  }
+
+  Widget customForm() {
     return Form(
       key: _formKey,
       child: Container(
@@ -70,6 +76,7 @@ class CustomFormState extends State<CustomForm> {
                   }
                   return null;
                 },
+                controller: textController,
               ),
             ),
             Container(
@@ -79,6 +86,10 @@ class CustomFormState extends State<CustomForm> {
                   if (_formKey.currentState.validate()) {
                     Scaffold.of(context)
                         .showSnackBar(SnackBar(content: Text('saved data')));
+                    setState(() {
+                      memos.add(textController.text);
+                      textController.clear();
+                    });
                   }
                 },
                 child: Text('Submit'),
@@ -87,6 +98,21 @@ class CustomFormState extends State<CustomForm> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildList() {
+    return ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: memos.length,
+        itemBuilder: (context, i) {
+          return buildRow(memos[i]);
+        });
+  }
+
+  Widget buildRow(String str) {
+    return ListTile(
+      title: Text(str),
     );
   }
 }
