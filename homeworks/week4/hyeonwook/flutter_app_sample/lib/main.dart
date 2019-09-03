@@ -13,6 +13,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          color: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black),
+          textTheme: TextTheme(
+            title: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 20
+            ),
+          ),
+        ),
+      ),
       title: 'CopyTrip',
       home: Scaffold(
         appBar: AppBar(
@@ -21,17 +34,7 @@ class MyApp extends StatelessWidget {
             tooltip: 'Navigation menu',
             onPressed: null,
           ),
-          title: Container(
-            child: Text('Checklists'),
-            alignment: Alignment.centerLeft,
-          ),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.home),
-              tooltip: 'Search',
-              onPressed: null,
-            ),
-          ],
+          title: Text('체크리스트'),
         ),
         body: Container(
           decoration: BoxDecoration(
@@ -202,6 +205,36 @@ class MyApp extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
+          type: BottomNavigationBarType.fixed,
+          unselectedIconTheme: IconThemeData(color: Colors.grey),
+          unselectedItemColor: Colors.grey,
+          selectedIconTheme: IconThemeData(color: Colors.lightBlueAccent),
+          selectedItemColor: Colors.lightBlueAccent,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.event_note),
+              title: Text('노트'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.check_circle),
+              title: Text('체크리스트'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.format_list_numbered),
+              title: Text('일정'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.monetization_on),
+              title: Text('비용'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline),
+              title: Text('일기'),
+            ),
+          ]
         ),
       ),
     );
