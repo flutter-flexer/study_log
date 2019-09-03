@@ -9,6 +9,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  var _selectedTagIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,10 +21,7 @@ class MyApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.black),
           textTheme: TextTheme(
             title: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 20
-            ),
+                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ),
       ),
@@ -49,103 +48,54 @@ class MyApp extends StatelessWidget {
                 margin: EdgeInsets.only(bottom: 5.0),
                 padding: EdgeInsets.all(10.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Container(
-                      child: Text('새 항목 추가'),
-                      alignment: Alignment.centerLeft,
+                    Text(
+                      '새 항목 추가',
+                      style: TextStyle(color: Colors.lightBlueAccent),
                     ),
                     TextField(),
                     Padding(
                       padding: const EdgeInsets.only(top: 10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: null,
-                              child: Container(
-                                child: Center(
-                                  child: Text(
-                                    'All',
-                                    style: TextStyle(
-                                        fontSize: 15.0, color: Colors.black),
+                      child: StatefulBuilder(
+                        builder: (context, tagsSetState) {
+                          var tags = ['All', 'A', 'B', 'C', 'D'];
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              for (var index = 0; index < tags.length; index++)
+                                GestureDetector(
+                                  onTap: () {
+                                    tagsSetState((){
+                                      _selectedTagIndex = index;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.only(left: 12, right: 12, top: 6, bottom: 6),
+                                    child: Center(
+                                      child: Text(
+                                        _selectedTagIndex == index ? '${tags[index]}' :
+                                        '#${tags[index]}',
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            color: index == _selectedTagIndex
+                                                ? Colors.lightBlueAccent
+                                                : Colors.black),
+                                      ),
+                                    ),
+                                    decoration: index == _selectedTagIndex
+                                        ? BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            color:
+                                                Colors.grey.withOpacity(0.2))
+                                        : BoxDecoration(),
                                   ),
                                 ),
-                                width: 30.0,
-                                height: 18.0,
-                                decoration: BoxDecoration(),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: null,
-                              child: Container(
-                                child: Center(
-                                  child: Text(
-                                    '#A',
-                                    style: TextStyle(
-                                        fontSize: 15.0, color: Colors.black),
-                                  ),
-                                ),
-                                width: 30.0,
-                                height: 18.0,
-                                decoration: BoxDecoration(),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: null,
-                              child: Container(
-                                child: Center(
-                                  child: Text(
-                                    '#B',
-                                    style: TextStyle(
-                                        fontSize: 15.0, color: Colors.black),
-                                  ),
-                                ),
-                                width: 30.0,
-                                height: 18.0,
-                                decoration: BoxDecoration(),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: null,
-                              child: Container(
-                                child: Center(
-                                  child: Text(
-                                    '#C',
-                                    style: TextStyle(
-                                        fontSize: 15.0, color: Colors.black),
-                                  ),
-                                ),
-                                width: 30.0,
-                                height: 18.0,
-                                decoration: BoxDecoration(),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: null,
-                              child: Container(
-                                child: Center(
-                                  child: Text(
-                                    '#D',
-                                    style: TextStyle(
-                                        fontSize: 15.0, color: Colors.black),
-                                  ),
-                                ),
-                                width: 30.0,
-                                height: 18.0,
-                                decoration: BoxDecoration(),
-                              ),
-                            ),
-                          ),
-                        ],
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -207,35 +157,34 @@ class MyApp extends StatelessWidget {
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          unselectedIconTheme: IconThemeData(color: Colors.grey),
-          unselectedItemColor: Colors.grey,
-          selectedIconTheme: IconThemeData(color: Colors.lightBlueAccent),
-          selectedItemColor: Colors.lightBlueAccent,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.event_note),
-              title: Text('노트'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.check_circle),
-              title: Text('체크리스트'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.format_list_numbered),
-              title: Text('일정'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.monetization_on),
-              title: Text('비용'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              title: Text('일기'),
-            ),
-          ]
-        ),
+            backgroundColor: Colors.white,
+            type: BottomNavigationBarType.fixed,
+            unselectedIconTheme: IconThemeData(color: Colors.grey),
+            unselectedItemColor: Colors.grey,
+            selectedIconTheme: IconThemeData(color: Colors.lightBlueAccent),
+            selectedItemColor: Colors.lightBlueAccent,
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.event_note),
+                title: Text('노트'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.check_circle),
+                title: Text('체크리스트'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.format_list_numbered),
+                title: Text('일정'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.monetization_on),
+                title: Text('비용'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble_outline),
+                title: Text('일기'),
+              ),
+            ]),
       ),
     );
   }
