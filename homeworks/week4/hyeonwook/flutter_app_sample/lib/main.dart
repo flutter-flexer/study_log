@@ -9,8 +9,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  var _selectedTagIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,166 +24,184 @@ class MyApp extends StatelessWidget {
         ),
       ),
       title: 'CopyTrip',
-      home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.menu),
-            tooltip: 'Navigation menu',
-            onPressed: null,
-          ),
-          title: Text('체크리스트'),
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            color: Colors.grey,
-          ),
-          child: Column(
-            children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                margin: EdgeInsets.only(bottom: 5.0),
-                padding: EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      '새 항목 추가',
-                      style: TextStyle(color: Colors.lightBlueAccent),
-                    ),
-                    TextField(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: StatefulBuilder(
-                        builder: (context, tagsSetState) {
-                          var tags = ['All', 'A', 'B', 'C', 'D'];
+      home: ChecklistScreen(),
+    );
+  }
+}
 
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              for (var index = 0; index < tags.length; index++)
+class ChecklistScreen extends StatefulWidget {
+  @override
+  _ChecklistScreenState createState() => _ChecklistScreenState();
+}
+
+class _ChecklistScreenState extends State<ChecklistScreen> {
+  var _selectedTagIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          tooltip: 'Navigation menu',
+          onPressed: null,
+        ),
+        title: Text('체크리스트'),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey,
+        ),
+        child: Column(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+              ),
+              margin: EdgeInsets.only(bottom: 5.0),
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    '새 항목 추가',
+                    style: TextStyle(color: Colors.lightBlueAccent),
+                  ),
+                  TextField(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: StatefulBuilder(
+                      builder: (context, tagsSetState) {
+                        var tags = ['All', 'A', 'B', 'C', 'D'];
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            for (var index = 0; index < tags.length; index++)
+                              GestureDetector(
+                                onTap: () {
+                                  tagsSetState(() {
+                                    _selectedTagIndex = index;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.only(
+                                      left: 12, right: 12, top: 6, bottom: 6),
+                                  child: Center(
+                                    child: Text(
+                                      _selectedTagIndex == index
+                                          ? '${tags[index]}'
+                                          : '#${tags[index]}',
+                                      style: TextStyle(
+                                          fontSize: 15.0,
+                                          color: index == _selectedTagIndex
+                                              ? Colors.lightBlueAccent
+                                              : Colors.black),
+                                    ),
+                                  ),
+                                  decoration: index == _selectedTagIndex
+                                      ? BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          color: Colors.grey.withOpacity(0.2))
+                                      : BoxDecoration(),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Colors.white,
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            '4/12',
+                          ),
+                          Container(
+                            width: 135.0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
                                 GestureDetector(
-                                  onTap: () {
-                                    tagsSetState((){
-                                      _selectedTagIndex = index;
-                                    });
-                                  },
+                                  onTap: null,
                                   child: Container(
-                                    padding: const EdgeInsets.only(left: 12, right: 12, top: 6, bottom: 6),
                                     child: Center(
                                       child: Text(
-                                        _selectedTagIndex == index ? '${tags[index]}' :
-                                        '#${tags[index]}',
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            color: index == _selectedTagIndex
-                                                ? Colors.lightBlueAccent
-                                                : Colors.black),
+                                        '태그명 편집',
+                                        style: TextStyle(color: Colors.blue),
                                       ),
                                     ),
-                                    decoration: index == _selectedTagIndex
-                                        ? BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(16),
-                                            color:
-                                                Colors.grey.withOpacity(0.2))
-                                        : BoxDecoration(),
                                   ),
                                 ),
-                            ],
-                          );
-                        },
+                                GestureDetector(
+                                  onTap: null,
+                                  child: Container(
+                                    child: Center(
+                                      child: Text(
+                                        '모두 삭제',
+                                        style: TextStyle(color: Colors.blue),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    Expanded(child: ChecklistListview()),
                   ],
                 ),
               ),
-              Expanded(
-                child: Container(
-                  color: Colors.white,
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.all(10.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              '4/12',
-                            ),
-                            Container(
-                              width: 135.0,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  GestureDetector(
-                                    onTap: null,
-                                    child: Container(
-                                      child: Center(
-                                        child: Text(
-                                          '태그명 편집',
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: null,
-                                    child: Container(
-                                      child: Center(
-                                        child: Text(
-                                          '모두 삭제',
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(child: ChecklistListview()),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: Colors.white,
-            type: BottomNavigationBarType.fixed,
-            unselectedIconTheme: IconThemeData(color: Colors.grey),
-            unselectedItemColor: Colors.grey,
-            selectedIconTheme: IconThemeData(color: Colors.lightBlueAccent),
-            selectedItemColor: Colors.lightBlueAccent,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.event_note),
-                title: Text('노트'),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.check_circle),
-                title: Text('체크리스트'),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.format_list_numbered),
-                title: Text('일정'),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.monetization_on),
-                title: Text('비용'),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.chat_bubble_outline),
-                title: Text('일기'),
-              ),
-            ]),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.lightBlueAccent,
+        child: Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
+          type: BottomNavigationBarType.fixed,
+          unselectedIconTheme: IconThemeData(color: Colors.grey),
+          unselectedItemColor: Colors.grey,
+          selectedIconTheme: IconThemeData(color: Colors.lightBlueAccent),
+          selectedItemColor: Colors.lightBlueAccent,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.event_note),
+              title: Text('노트'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.check_circle),
+              title: Text('체크리스트'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.format_list_numbered),
+              title: Text('일정'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.monetization_on),
+              title: Text('비용'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline),
+              title: Text('일기'),
+            ),
+          ]),
     );
   }
 }
