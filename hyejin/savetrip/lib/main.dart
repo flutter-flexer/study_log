@@ -33,6 +33,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// stateful Builder
+
 
 
 class CustomCheckList extends StatefulWidget {
@@ -40,14 +42,14 @@ class CustomCheckList extends StatefulWidget {
   CustomCheckListState createState() {
     return CustomCheckListState();
   }
-
 }
 
 class CustomCheckListState extends State<CustomCheckList> {
   final _formKey = GlobalKey<FormState>();
   final textController = TextEditingController();
   final memos = <String>[];
-
+  final Set<String> dictionaryMemo = Set<String>();
+  final Set<String> _isChaeckedMemo = Set<String>();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -83,14 +85,20 @@ class CustomCheckListState extends State<CustomCheckList> {
               width: 100,
               child: RaisedButton(
                 onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    Scaffold.of(context)
-                        .showSnackBar(SnackBar(content: Text('saved data')));
-                    setState(() {
-                      memos.add(textController.text);
-                      textController.clear();
-                    });
-                  }
+                  Scaffold.of(context).removeCurrentSnackBar();
+                  if (_formKey.currentState.validate())
+                    if (dictionaryMemo.contains(textController.text) == false) {
+                      Scaffold.of(context)
+                          .showSnackBar(SnackBar(content: Text('saved data')));
+                      setState(() {
+                        dictionaryMemo.add(textController.text);
+                        memos.add(textController.text);
+                        textController.clear();
+                      });
+                    } else {
+                      Scaffold.of(context)
+                          .showSnackBar(SnackBar(content: Text('overlapped data')));
+                    }
                 },
                 child: Text('Submit'),
               ),
@@ -111,8 +119,22 @@ class CustomCheckListState extends State<CustomCheckList> {
   }
 
   Widget buildRow(String str) {
+    final bool isChecked = _isChaeckedMemo.contains(str);
     return ListTile(
       title: Text(str),
+      leading: Icon(
+        isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+        color : Colors.blue,
+      ),
+      onTap: () {
+        setState(() {
+          if (isChecked) {
+            _isChaeckedMemo.remove(str);
+          } else {
+            _isChaeckedMemo.add(str);
+          }
+        });
+      },
     );
   }
 }
