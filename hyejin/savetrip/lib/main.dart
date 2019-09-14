@@ -3,39 +3,58 @@ import 'package:flutter/material.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final title = 'CheckList';
-
     return MaterialApp(
-      title: title,
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-        ),
-        body: CustomCheckList()
-
-      ),
+      home: Tabbar(),
     );
   }
 }
 
+class Tabbar extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return TabbarState();
+  }
+}
+
+class TabbarState extends State<Tabbar> {
+  // This widget is the root of your application.
+  int _currentIndex = 1;
+
+  final List<Widget> _children = [
+    Icon(Icons.event_note),
+    CustomCheckList(),
+    Icon(Icons.storage)
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Save TRIP')),
+      body: _children[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: onTabTapped,
+        currentIndex: _currentIndex,
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.event_note), title: Text('노트')),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.check_box), title: Text('체크리스트')),
+          BottomNavigationBarItem(icon: Icon(Icons.storage), title: Text('일정')),
+        ],
+      ),
+    );
+  }
+
+  void onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+}
+
 // stateful Builder
-
-
 
 class CustomCheckList extends StatefulWidget {
   @override
@@ -50,6 +69,7 @@ class CustomCheckListState extends State<CustomCheckList> {
   final memos = <String>[];
   final Set<String> dictionaryMemo = Set<String>();
   final Set<String> _isChaeckedMemo = Set<String>();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -86,19 +106,20 @@ class CustomCheckListState extends State<CustomCheckList> {
               child: RaisedButton(
                 onPressed: () {
                   Scaffold.of(context).removeCurrentSnackBar();
-                  if (_formKey.currentState.validate())
-                    if (dictionaryMemo.contains(textController.text) == false) {
-                      Scaffold.of(context)
-                          .showSnackBar(SnackBar(content: Text('saved data')));
-                      setState(() {
-                        dictionaryMemo.add(textController.text);
-                        memos.add(textController.text);
-                        textController.clear();
-                      });
-                    } else {
-                      Scaffold.of(context)
-                          .showSnackBar(SnackBar(content: Text('overlapped data')));
-                    }
+                  if (_formKey.currentState.validate()) if (dictionaryMemo
+                          .contains(textController.text) ==
+                      false) {
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text('saved data')));
+                    setState(() {
+                      dictionaryMemo.add(textController.text);
+                      memos.add(textController.text);
+                      textController.clear();
+                    });
+                  } else {
+                    Scaffold.of(context).showSnackBar(
+                        SnackBar(content: Text('overlapped data')));
+                  }
                 },
                 child: Text('Submit'),
               ),
@@ -124,7 +145,7 @@ class CustomCheckListState extends State<CustomCheckList> {
       title: Text(str),
       leading: Icon(
         isChecked ? Icons.check_box : Icons.check_box_outline_blank,
-        color : Colors.blue,
+        color: Colors.blue,
       ),
       onTap: () {
         setState(() {
