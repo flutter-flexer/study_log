@@ -63,12 +63,20 @@ class CustomCheckList extends StatefulWidget {
   }
 }
 
+class CheckItem {
+  String text;
+  bool isChecked;
+
+  CheckItem(String text, bool isChecked) {
+    this.text = text;
+    this.isChecked = isChecked;
+  }
+}
+
 class CustomCheckListState extends State<CustomCheckList> {
   final _formKey = GlobalKey<FormState>();
   final textController = TextEditingController();
-  final memos = <String>[];
-  final Set<String> dictionaryMemo = Set<String>();
-  final Set<String> _isChaeckedMemo = Set<String>();
+  final datas = <CheckItem>[];
 
   @override
   Widget build(BuildContext context) {
@@ -106,20 +114,13 @@ class CustomCheckListState extends State<CustomCheckList> {
               child: RaisedButton(
                 onPressed: () {
                   Scaffold.of(context).removeCurrentSnackBar();
-                  if (_formKey.currentState.validate()) if (dictionaryMemo
-                          .contains(textController.text) ==
-                      false) {
-                    Scaffold.of(context)
-                        .showSnackBar(SnackBar(content: Text('saved data')));
-                    setState(() {
-                      dictionaryMemo.add(textController.text);
-                      memos.add(textController.text);
-                      textController.clear();
-                    });
-                  } else {
-                    Scaffold.of(context).showSnackBar(
-                        SnackBar(content: Text('overlapped data')));
-                  }
+                  Scaffold.of(context)
+                      .showSnackBar(SnackBar(content: Text('saved data')));
+                  setState(() {
+                    CheckItem checkItem = CheckItem(textController.text, false);
+                    datas.add(checkItem);
+                    textController.clear();
+                  });
                 },
                 child: Text('Submit'),
               ),
@@ -132,30 +133,39 @@ class CustomCheckListState extends State<CustomCheckList> {
 
   Widget buildList() {
     return ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: memos.length,
+        padding: const EdgeInsets.all(0.0),
+        itemCount: datas.length,
         itemBuilder: (context, i) {
-          return buildRow(memos[i]);
+          return buildRow(datas[i], i);
         });
   }
 
-  Widget buildRow(String str) {
-    final bool isChecked = _isChaeckedMemo.contains(str);
+  Widget buildRow(CheckItem item, int index) {
     return ListTile(
-      title: Text(str),
-      leading: Icon(
-        isChecked ? Icons.check_box : Icons.check_box_outline_blank,
-        color: Colors.blue,
+      title: Text(item.text),
+      leading: FlatButton(
+        onPressed: () {
+          setState(() {
+            if (item.isChecked) {
+              item.isChecked = false;
+            } else {
+              item.isChecked = true;
+            }
+          });
+        },
+        child: Icon(
+          item.isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+          color: Colors.blue,
+        ),
       ),
-      onTap: () {
-        setState(() {
-          if (isChecked) {
-            _isChaeckedMemo.remove(str);
-          } else {
-            _isChaeckedMemo.add(str);
-          }
-        });
-      },
+      trailing: FlatButton(
+        onPressed: () {
+          setState(() {
+            datas.removeAt(index);
+          });
+        },
+        child: Icon(Icons.delete, color: Colors.red),
+      ),
     );
   }
 }
