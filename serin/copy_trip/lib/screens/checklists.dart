@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class CheckList extends StatefulWidget {
   CheckList({Key key}) : super(key: key);
@@ -9,7 +10,8 @@ class CheckList extends StatefulWidget {
 
 
 class _CheckListState extends State<CheckList> {
-  var _bottomNavigationBarIndex = 0;
+  var _bottomNavigationBarIndex = 1;
+  var _floatingButtonFlag = false;
   var _focusNode = FocusNode();
   var _textEditingController = TextEditingController();
 
@@ -50,6 +52,46 @@ class _CheckListState extends State<CheckList> {
     });
   }
 
+  void _handleItemAdded(String itemName) {
+    setState(() {
+      Fluttertoast.showToast(
+        msg: '"' + _textEditingController.text + '" 추가됨',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.grey,
+      );
+      _items.add(Item(itemName, false));
+    });
+  }
+
+  void _handleItemDeleted(Item item) {
+    setState(() {
+      Fluttertoast.showToast(
+        msg: '"' + item.name + '" 제거됨',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.grey,
+      );
+      _items.remove(item);
+    });
+  }
+
+  void _handleItemEdit(Item item) {
+    setState(() {
+      Fluttertoast.showToast(
+        msg: '"' + item.name + '" 수정',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.grey,
+      );
+      _textEditingController.text = item.name;
+      _items.remove(item);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,27 +111,57 @@ class _CheckListState extends State<CheckList> {
         ],
       ),
       drawer: Drawer(),
-//      bottomNavigationBar: BottomNavigationBar(
-//        type: BottomNavigationBarType.fixed,
-//        currentIndex: _bottomNavigationBarIndex,
-//        onTap: (index) {
-//          setState(() {
-//            _bottomNavigationBarIndex = index;
-//          });
-//        },
-//        items: [
-//          BottomNavigationBarItem(
-//            icon: Icon(
-//                Icons.check_circle,
-//            ),
-//          ),
-//          BottomNavigationBarItem(
-//            icon: Icon(
-//              Icons.note,
-//            ),
-//          ),
-//        ],
-//      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _bottomNavigationBarIndex,
+        selectedItemColor: Colors.lightBlue,
+        onTap: (index) {
+          setState(() {
+            _bottomNavigationBarIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.description,
+            ),
+            title: Text("노트"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+                Icons.check_circle,
+            ),
+            title: Text("체크리스트"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.format_list_numbered,
+            ),
+            title: Text("일정"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.monetization_on,
+            ),
+            title: Text("비용"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.mode_comment,
+            ),
+            title: Text("일기"),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          if (_floatingButtonFlag) {
+            _handleItemAdded(_textEditingController.text);
+            _textEditingController.text = "";
+          }
+        },
+      ),
       body: Container(
         decoration: BoxDecoration(
           color: Colors.black12,
@@ -120,12 +192,21 @@ class _CheckListState extends State<CheckList> {
                     TextField(
                       focusNode: _focusNode,
                       controller: _textEditingController,
-//                      onChanged: (string) { // Text 유효성 검증
-//
-//                      },
-//                      onEditingComplete: () { // 작성완료 (enter) 입력시의 행동 정의
-//
-//                      },
+                      onChanged: (s) {
+                        if (s != "") {
+                          _floatingButtonFlag = true;
+                        }
+                      },
+                      onEditingComplete: () { // 작성완료 (enter) 입력시의 행동 정의
+                        if (_textEditingController.text != "") {
+                          _handleItemAdded(_textEditingController.text);
+                          _textEditingController.text = "";
+                          _floatingButtonFlag = false;
+                        }
+                      },
+                      onTap: () {
+
+                      },
                       //keyboardType: Keybo,
                       decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
@@ -156,6 +237,7 @@ class _CheckListState extends State<CheckList> {
                             ),
                           ),
                         ),
+                        // TODO: cover each flat button to container
                         FlatButton(
                           onPressed: () {},
                           child: Text("#A"),
@@ -216,6 +298,9 @@ class _CheckListState extends State<CheckList> {
                               item: item,
                               isChecked: item.isChecked,
                               onCheckChanged: _handleCheckedChanged,
+                              onItemAdded: _handleItemAdded,
+                              onItemDeleted: _handleItemDeleted,
+                              onItemEdit: _handleItemEdit,
                             ),
                           );
                         },
@@ -232,16 +317,43 @@ class _CheckListState extends State<CheckList> {
   }
 }
 
+// TODO: show floating button only when the textfield is active
+//class ItemAddFloatingButton extends StatelessWidget {
+//  //ItemAddFloatingButton({})
+//
+//  @override
+//  Widget build(BuildContext context) {
+//    return FloatingActionButton(
+//      child: Icon(Icons.add),
+//      onPressed: () {
+//        if (_floatingButtonFlag) {
+//          _handleItemAdded(_textEditingController.text);
+//          _textEditingController.text = "";
+//        }
+//      },
+//    );
+//
+//  }
+//}
+
+
 typedef void CheckChangedCallback(Item item, bool isChecked);
+typedef void ItemAddedCallback(String itemName);
+typedef void ItemDeletedCallback(Item item);
+typedef void ItemEditCallback(Item item);
 
 class CheckListItem extends StatelessWidget {
-  CheckListItem({Item item, this.isChecked, this.onCheckChanged})
+  CheckListItem({Item item, this.isChecked,
+    this.onCheckChanged, this.onItemAdded, this.onItemDeleted, this.onItemEdit})
       : item = item,
         super(key: ObjectKey(item));
 
   final Item item;
   final bool isChecked;
   final CheckChangedCallback onCheckChanged;
+  final ItemAddedCallback onItemAdded;
+  final ItemDeletedCallback onItemDeleted;
+  final ItemEditCallback onItemEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +378,20 @@ class CheckListItem extends StatelessWidget {
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
-        children: <Widget>[Icon(Icons.edit), Icon(Icons.remove)],
+        children: <Widget>[
+          IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: () {
+              onItemEdit(item);
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.remove),
+            onPressed: () {
+              onItemDeleted(item);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -275,6 +400,9 @@ class CheckListItem extends StatelessWidget {
 class Item {
   String name;
   bool isChecked;
+  // TODO: add order and tag
+  //int order; // this order is for sorting
+  //String tag;
 
   Item(this.name, this.isChecked);
 }
