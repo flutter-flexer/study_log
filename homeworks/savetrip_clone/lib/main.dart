@@ -88,7 +88,7 @@ class _MainState extends State<Main> {
         },
         backgroundColor: Colors.blue,
       ),
-      body: ChecklistScreen(key: _key),
+      body: ChecklistView(key: _key),
     );
   }
 }

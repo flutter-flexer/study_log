@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-
-class ChecklistScreen extends StatelessWidget {
-  ChecklistScreen({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ChecklistView(key: key);
-  }
-}
+import 'package:uuid/uuid.dart';
 
 class ChecklistView extends StatefulWidget {
   ChecklistView({Key key}) : super(key: key);
@@ -49,8 +41,44 @@ class ChecklistViewState extends State<ChecklistView> {
     }
   }
 
+  // user defined function
+  void _showDialog() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("전체 삭제"),
+          content: new Text("목록을 모두 삭제합니다. 계속 하시겠습니까?"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("삭제"),
+              onPressed: () {
+                setState(() {
+                  if(_selectedTag == 0) {
+                    _items = [];
+                  } else {
+                    _items.removeWhere((i) => i.tag == _selectedTag);
+                  }
+                  Navigator.of(context).pop();
+                });
+              },
+            ),
+            new FlatButton(
+              child: new Text("취소"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<ChecklistModel> itemsToShow = _selectedTag == 0 ? _items : _items.where((i) => i.tag == _selectedTag).toList();
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey,
@@ -150,9 +178,9 @@ class ChecklistViewState extends State<ChecklistView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          '${_items
+                          '${itemsToShow
                               .where((item) => item.isChecked)
-                              .length}/${_items.length}',
+                              .length}/${itemsToShow.length}',
                         ),
                         Container(
                           width: 135.0,
@@ -171,7 +199,7 @@ class ChecklistViewState extends State<ChecklistView> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: null,
+                                onTap: _showDialog,
                                 child: Container(
                                   child: Center(
                                     child: Text(
@@ -189,22 +217,28 @@ class ChecklistViewState extends State<ChecklistView> {
                   ),
                   Expanded(
                     child: ChecklistListview(
-                      items: _items,
+                      items: itemsToShow,
                       onChecked: (param) {
                         setState(() {
-                          _items[param['index']].isChecked = param['value'];
+                          var selectedId = itemsToShow[param['index']].id;
+                          var matchedIndex = _items.indexWhere((i) => i.id == selectedId);
+                          _items[matchedIndex].isChecked = param['value'];
                         });
                       },
                       onEdited: (index) {
                         setState(() {
-                          ChecklistModel item = _items.removeAt(index);
+                          var selectedId = itemsToShow[index].id;
+                          var matchedIndex = _items.indexWhere((i) => i.id == selectedId);
+                          ChecklistModel item = _items.removeAt(matchedIndex);
                           itemTextController.text = item.content;
                           _selectedTag = item.tag;
                         });
                       },
                       onRemoved: (index) {
                         setState(() {
-                          _items.removeAt(index);
+                          var selectedId = itemsToShow[index].id;
+                          var matchedIndex = _items.indexWhere((i) => i.id == selectedId);
+                          _items.removeAt(matchedIndex);
                         });
                       },
                     ),
@@ -288,8 +322,11 @@ class ChecklistModel {
   String content;
   bool isChecked;
   int tag;
+  Uuid id;
 
-  ChecklistModel({this.content, this.isChecked=false, this.tag = 1});
+  ChecklistModel({this.content, this.isChecked=false, this.tag = 1}) {
+    id = new Uuid();
+  }
 }
 
 class TagButton extends StatelessWidget {
