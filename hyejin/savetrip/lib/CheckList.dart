@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ChecklistBloc with ChangeNotifier {
+class CheckListBloc with ChangeNotifier {
   List<CheckItem> get all => _all();
+  List<CheckItem> datas = [];
 
   List<CheckItem> _all() {
     return datas;
   }
+
+  void appendData(CheckItem item) {
+     datas.add(item);
+  }
+
+  void removeData(int index) {
+    datas.removeAt(index);
+  }
+
+  void changeChecked(CheckItem item) {
+    if (item.isChecked) {
+      item.isChecked = false;
+    } else {
+      item.isChecked = true;
+    }
+  }
 }
 
-List<CheckItem> datas = [];
 
 class CheckItem {
   String text;
@@ -32,16 +48,20 @@ class CustomCheckList extends StatefulWidget {
 class CustomCheckListState extends State<CustomCheckList> {
   final _formKey = GlobalKey<FormState>();
   final textController = TextEditingController();
-
+  var _block = CheckListBloc();
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        customForm(),
-        Expanded(
-          child: buildList(),
-        ),
-      ],
+
+    return ChangeNotifierProvider<CheckListBloc>(
+      builder: (context) => _block,
+      child: Column(
+        children: <Widget>[
+          customForm(),
+          Expanded(
+            child: buildList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -69,13 +89,18 @@ class CustomCheckListState extends State<CustomCheckList> {
               child: RaisedButton(
                 onPressed: () {
                   Scaffold.of(context).removeCurrentSnackBar();
-                  Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text('saved data')));
-                  setState(() {
+
+                  if(textController.text.isEmpty) {
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text('empty data')));
+                  } else {
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text('saved data')));
                     CheckItem checkItem = CheckItem(textController.text, false);
-                    datas.add(checkItem);
+                    _block.appendData(checkItem);
                     textController.clear();
-                  });
+                    setState(() {});
+                  }
                 },
                 child: Text('Submit'),
               ),
@@ -89,23 +114,21 @@ class CustomCheckListState extends State<CustomCheckList> {
   Widget buildList() {
     return ListView.builder(
         padding: const EdgeInsets.all(0.0),
-        itemCount: datas.length,
+        itemCount: _block.datas.length,
         itemBuilder: (context, i) {
-          return buildRow(datas[i], i);
+          return buildRow(i);
         });
   }
 
-  Widget buildRow(CheckItem item, int index) {
+  Widget buildRow(int index) {
+    CheckItem item = _block.datas[index];
     return ListTile(
       title: Text(item.text),
       leading: FlatButton(
         onPressed: () {
+          _block.changeChecked(item);
           setState(() {
-            if (item.isChecked) {
-              item.isChecked = false;
-            } else {
-              item.isChecked = true;
-            }
+
           });
         },
         child: Icon(
@@ -115,8 +138,9 @@ class CustomCheckListState extends State<CustomCheckList> {
       ),
       trailing: FlatButton(
         onPressed: () {
+          _block.removeData(index);
           setState(() {
-            datas.removeAt(index);
+
           });
         },
         child: Icon(Icons.delete, color: Colors.red),
