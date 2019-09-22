@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app_sample/main.dart';
 
 class ChecklistView extends StatefulWidget {
   ChecklistView({Key key}) : super(key: key);
@@ -78,6 +80,7 @@ class ChecklistViewState extends State<ChecklistView> {
 
   @override
   Widget build(BuildContext context) {
+    final floatingButtonBloc = Provider.of<FloatingButtonBloc>(context); // Counter 타입의 데이터를 가져옴.
     List<ChecklistModel> itemsToShow = _selectedTag == 0 ? _items : _items.where((i) => i.tag == _selectedTag).toList();
     return Container(
       decoration: BoxDecoration(
@@ -98,8 +101,16 @@ class ChecklistViewState extends State<ChecklistView> {
                   alignment: Alignment.centerLeft,
                 ),
                 TextField(
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.text,
                   controller: itemTextController,
+                  onChanged: (text) {
+                    print(text);
+                    if (text?.length > 0) {
+                      floatingButtonBloc.showButton();
+                    } else {
+                      floatingButtonBloc.hideButton();
+                    }
+                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
