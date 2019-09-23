@@ -1,34 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 
-class CheckList extends StatefulWidget {
-  CheckList({Key key}) : super(key: key);
-
-  @override
-  _CheckListState createState() => _CheckListState();
-}
-
-
-class _CheckListState extends State<CheckList> {
-  var _bottomNavigationBarIndex = 1;
-  var _floatingButtonFlag = false;
-  var _focusNode = FocusNode();
-  var _textEditingController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-  }
-
-  @override
-  void dispose() {
-    _textEditingController.dispose();
-
-    super.dispose();
-  }
-
-  List<Item> _items = [
+class CheckListBloc with ChangeNotifier {
+  List<Item> items = [
     Item("2 blackets", false),
     Item("5 underwears", false),
     Item("6 pair socks", false),
@@ -42,6 +17,49 @@ class _CheckListState extends State<CheckList> {
     Item("Sunglass", true),
     Item("iPad", true),
   ];
+
+  int _checkCount = 0;
+
+  int get checkCount => _checkCount;
+
+  set checkCount(v) {
+    if (_checkCount != v) {
+      _checkCount = v;
+      notifyListeners();
+    }
+  }
+
+  void updateCheckCount() {
+    _checkCount = items.where((e) => e.isChecked).length;
+  }
+}
+
+class CheckList extends StatefulWidget {
+  CheckList({Key key}) : super(key: key);
+
+  @override
+  _CheckListState createState() => _CheckListState();
+}
+
+class _CheckListState extends State<CheckList> {
+  var _bottomNavigationBarIndex = 1;
+  var _floatingButtonFlag = false;
+  var _focusNode = FocusNode();
+  var _textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+
+    super.dispose();
+  }
+
+  var _bloc = CheckListBloc();
 
   void _handleCheckedChanged(Item item, bool isChecked) {
     setState(() {
@@ -61,7 +79,8 @@ class _CheckListState extends State<CheckList> {
         timeInSecForIos: 1,
         backgroundColor: Colors.grey,
       );
-      _items.add(Item(itemName, false));
+
+      _bloc.items.add(Item(itemName, false));
     });
   }
 
@@ -74,7 +93,7 @@ class _CheckListState extends State<CheckList> {
         timeInSecForIos: 1,
         backgroundColor: Colors.grey,
       );
-      _items.remove(item);
+      _bloc.items.remove(item);
     });
   }
 
@@ -88,12 +107,14 @@ class _CheckListState extends State<CheckList> {
         backgroundColor: Colors.grey,
       );
       _textEditingController.text = item.name;
-      _items.remove(item);
+      _bloc.items.remove(item);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    _bloc.updateCheckCount();
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -129,7 +150,7 @@ class _CheckListState extends State<CheckList> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-                Icons.check_circle,
+              Icons.check_circle,
             ),
             title: Text("체크리스트"),
           ),
@@ -162,155 +183,158 @@ class _CheckListState extends State<CheckList> {
           }
         },
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: Colors.black12,
-        ),
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Container(
+      body: ChangeNotifierProvider<CheckListBloc>(
+        builder: (context) => _bloc,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black12,
+          ),
+          child: Column(
+            children: <Widget>[
+              Padding(
                 padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          "Add new item",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.lightBlue,
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Text(
+                            "Add new item",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.lightBlue,
+                            ),
+                            textAlign: TextAlign.left,
                           ),
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                    TextField(
-                      focusNode: _focusNode,
-                      controller: _textEditingController,
-                      onChanged: (s) {
-                        if (s != "") {
-                          _floatingButtonFlag = true;
-                        }
-                      },
-                      onEditingComplete: () { // 작성완료 (enter) 입력시의 행동 정의
-                        if (_textEditingController.text != "") {
-                          _handleItemAdded(_textEditingController.text);
-                          _textEditingController.text = "";
-                          _floatingButtonFlag = false;
-                        }
-                      },
-                      onTap: () {
-
-                      },
-                      //keyboardType: Keybo,
-                      decoration: InputDecoration(
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.lightBlue,
+                        ],
+                      ),
+                      TextField(
+                        focusNode: _focusNode,
+                        controller: _textEditingController,
+                        onChanged: (s) {
+                          if (s != "") {
+                            _floatingButtonFlag = true;
+                          }
+                        },
+                        onEditingComplete: () {
+                          // 작성완료 (enter) 입력시의 행동 정의
+                          if (_textEditingController.text != "") {
+                            _handleItemAdded(_textEditingController.text);
+                            _textEditingController.text = "";
+                            _floatingButtonFlag = false;
+                          }
+                        },
+                        onTap: () {},
+                        //keyboardType: Keybo,
+                        decoration: InputDecoration(
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.lightBlue,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      //mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Container(
-                          width: 70,
-                          child: FlatButton(
-                            onPressed: () {},
-                            //color: Colors.black12,
-                            color: Colors.grey.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            child: Text(
-                              "#ALL",
-                              style: TextStyle(
-                                color: Colors.lightBlue,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        //mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Container(
+                            width: 70,
+                            child: FlatButton(
+                              onPressed: () {},
+                              //color: Colors.black12,
+                              color: Colors.grey.withOpacity(0.1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              child: Text(
+                                "#ALL",
+                                style: TextStyle(
+                                  color: Colors.lightBlue,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // TODO: cover each flat button to container
-                        FlatButton(
-                          onPressed: () {},
-                          child: Text("#A"),
-                        ),
-                        FlatButton(
-                          onPressed: () {},
-                          child: Text("#B"),
-                        ),
-                        FlatButton(
-                          onPressed: () {},
-                          child: Text("#C"),
-                        ),
+                          // TODO: cover each flat button to container
+                          FlatButton(
+                            onPressed: () {},
+                            child: Text("#A"),
+                          ),
+                          FlatButton(
+                            onPressed: () {},
+                            child: Text("#B"),
+                          ),
+                          FlatButton(
+                            onPressed: () {},
+                            child: Text("#C"),
+                          ),
 //                        FlatButton(
 //                          onPressed: () {},
 //                          child: Text(
 //                              "#D"
 //                          ),
 //                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 8.0),
-                //padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text("4/12"),
-                          Text(
-                            " DELETE ALL",
-                            style: TextStyle(
-                              color: Colors.lightBlue,
-                            ),
-                          ),
                         ],
                       ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: _items.length,
-                        itemBuilder: (context, index) {
-                          final item = _items[index];
-
-                          return Container(
-                            height: 36,
-                            child: CheckListItem(
-                              item: item,
-                              isChecked: item.isChecked,
-                              onCheckChanged: _handleCheckedChanged,
-                              onItemAdded: _handleItemAdded,
-                              onItemDeleted: _handleItemDeleted,
-                              onItemEdit: _handleItemEdit,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 8.0),
+                  //padding: EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            //Text("4/12"),
+                            Text('${_bloc._checkCount}/${_bloc.items.length}'),
+                            Text(
+                              " DELETE ALL",
+                              style: TextStyle(
+                                color: Colors.lightBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _bloc.items.length,
+                          itemBuilder: (context, index) {
+                            final item = _bloc.items[index];
+
+                            return Container(
+                              //height: 56,
+                              child: CheckListItem(
+                                item: item,
+                                isChecked: item.isChecked,
+                                onCheckChanged: _handleCheckedChanged,
+                                onItemAdded: _handleItemAdded,
+                                onItemDeleted: _handleItemDeleted,
+                                onItemEdit: _handleItemEdit,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -336,15 +360,19 @@ class _CheckListState extends State<CheckList> {
 //  }
 //}
 
-
 typedef void CheckChangedCallback(Item item, bool isChecked);
 typedef void ItemAddedCallback(String itemName);
 typedef void ItemDeletedCallback(Item item);
 typedef void ItemEditCallback(Item item);
 
 class CheckListItem extends StatelessWidget {
-  CheckListItem({Item item, this.isChecked,
-    this.onCheckChanged, this.onItemAdded, this.onItemDeleted, this.onItemEdit})
+  CheckListItem(
+      {Item item,
+      this.isChecked,
+      this.onCheckChanged,
+      this.onItemAdded,
+      this.onItemDeleted,
+      this.onItemEdit})
       : item = item,
         super(key: ObjectKey(item));
 
@@ -400,9 +428,12 @@ class CheckListItem extends StatelessWidget {
 class Item {
   String name;
   bool isChecked;
+  int idx;
+  String tag;
+
   // TODO: add order and tag
   //int order; // this order is for sorting
   //String tag;
 
-  Item(this.name, this.isChecked);
+  Item(this.name, this.isChecked, {this.idx = 0, this.tag = 'A'});
 }
